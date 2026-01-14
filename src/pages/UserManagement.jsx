@@ -1377,7 +1377,7 @@ export default function UserManagement() {
                       src={
                         avatarPreview.startsWith('data:') || avatarPreview.startsWith('http') 
                           ? avatarPreview 
-                          : `http://localhost:4000${avatarPreview.startsWith('/') ? avatarPreview : '/' + avatarPreview}`
+                          : `${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${avatarPreview.startsWith('/') ? avatarPreview : '/' + avatarPreview}`
                       } 
                       alt="Avatar preview" 
                       className="avatar-preview mb-3" 
@@ -2333,7 +2333,7 @@ export default function UserManagement() {
                         </div>
                         {doc.path && (
                           <a
-                            href={doc.path.startsWith('http') ? doc.path : `http://localhost:4000${doc.path}`}
+                            href={doc.path.startsWith('http') ? doc.path : `${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${doc.path}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-sm btn-outline-primary"

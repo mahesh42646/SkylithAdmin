@@ -22,7 +22,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:4000", "http://127.0.0.1:4000"],
+      imgSrc: ["'self'", "data:", "http://localhost:4002", "http://127.0.0.1:4002", "https://skylith.cloud"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
     },
@@ -74,9 +74,15 @@ const corsOptions = {
       process.env.FRONTEND_URL_ALT,
       'http://localhost:3000',
       'http://localhost:3001',
-      
+      'http://localhost:3002',
+      'http://skyliths.com',
+      'https://skyliths.com',
+      'http://skylith.cloud',
+      'https://skylith.cloud',
+      'https://www.skylith.cloud',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001'
+      'http://127.0.0.1:3001',
+      'http://127.0.0.1:3002'
     ].filter(Boolean);
     
     if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
@@ -136,7 +142,7 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4002;
 
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

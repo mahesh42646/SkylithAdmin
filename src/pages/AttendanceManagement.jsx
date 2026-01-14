@@ -300,7 +300,7 @@ export default function AttendanceManagement() {
         <div className="d-flex align-items-center gap-2">
           {value?.avatar && (
             <img 
-              src={`http://localhost:4000${value.avatar}`} 
+              src={`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${value.avatar}`} 
               alt={value.name}
               className="rounded-circle"
               width="32"
@@ -500,7 +500,7 @@ export default function AttendanceManagement() {
                   {viewingAttendance.punchIn?.image && (
                     <div className="mt-3">
                       <img
-                        src={`http://localhost:4000${viewingAttendance.punchIn.image}`}
+                        src={`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${viewingAttendance.punchIn.image}`}
                         alt="Punch In"
                         className="img-fluid rounded border"
                         style={{ maxHeight: '200px', objectFit: 'cover', width: '100%' }}
@@ -541,7 +541,7 @@ export default function AttendanceManagement() {
                   {viewingAttendance.punchOut?.image && (
                     <div className="mt-3">
                       <img
-                        src={`http://localhost:4000${viewingAttendance.punchOut.image}`}
+                        src={`${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${viewingAttendance.punchOut.image}`}
                         alt="Punch Out"
                         className="img-fluid rounded border"
                         style={{ maxHeight: '200px', objectFit: 'cover', width: '100%' }}

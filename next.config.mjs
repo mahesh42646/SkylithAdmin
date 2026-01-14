@@ -7,7 +7,17 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '4000',
+        port: '4002',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'skylith.cloud',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.skylith.cloud',
         pathname: '/**',
       },
     ],

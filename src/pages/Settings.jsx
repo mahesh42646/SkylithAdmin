@@ -70,7 +70,7 @@ export default function Settings({ editingUserId = null }) {
         const normalizedAvatar = userData.avatar
           ? (userData.avatar.startsWith('data:') || userData.avatar.startsWith('http')
               ? userData.avatar
-              : `http://localhost:4000${userData.avatar.startsWith('/') ? userData.avatar : '/' + userData.avatar}`)
+              : `${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${userData.avatar.startsWith('/') ? userData.avatar : '/' + userData.avatar}`)
           : null;
         setAvatarPreview(normalizedAvatar);
         setExistingDocuments(userData.documents || []);
@@ -95,7 +95,7 @@ export default function Settings({ editingUserId = null }) {
     }
     // Normalize path and prepend backend URL
     const normalizedPath = src.startsWith('/') ? src : `/${src}`;
-    const fullUrl = `http://localhost:4000${normalizedPath}`;
+    const fullUrl = `${process.env.NEXT_PUBLIC_UPLOAD_BASE_URL}${normalizedPath}`;
     console.log('Resolved avatar URL:', fullUrl, 'from:', src);
     return fullUrl;
   };

@@ -84,6 +84,7 @@ export default function AttendanceManagement() {
       const params = {
         startDate,
         endDate,
+        showAllUsers: 'true', // Show all users, even those without attendance records
         ...(selectedUser && { userId: selectedUser }),
         ...(statusFilter && { status: statusFilter })
       };

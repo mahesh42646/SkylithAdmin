@@ -9,7 +9,9 @@ const {
   getAttendanceById,
   updateAttendance,
   deleteAttendance,
-  getAttendanceSummary
+  getAttendanceSummary,
+  createManualAttendance,
+  autoMarkAbsent
 } = require('../controllers/attendanceController');
 const { protect, checkPermission } = require('../middleware/auth');
 const { PERMISSIONS } = require('../utils/permissions');
@@ -24,6 +26,8 @@ router.get('/my-attendance', protect, getMyAttendance);
 // Note: Specific routes BEFORE generic :id route
 router.get('/', protect, checkPermission(PERMISSIONS.VIEW_ATTENDANCE), getAllAttendance);
 router.get('/summary/:userId', protect, checkPermission(PERMISSIONS.VIEW_ATTENDANCE), getAttendanceSummary);
+router.post('/manual', protect, checkPermission(PERMISSIONS.MANAGE_ATTENDANCE), createManualAttendance);
+router.post('/auto-mark-absent', autoMarkAbsent); // Internal cron job route - no auth for cron
 router.get('/:id', protect, checkPermission(PERMISSIONS.VIEW_ATTENDANCE), getAttendanceById);
 router.put('/:id', protect, checkPermission(PERMISSIONS.MANAGE_ATTENDANCE), updateAttendance);
 router.delete('/:id', protect, checkPermission(PERMISSIONS.MANAGE_ATTENDANCE), deleteAttendance);

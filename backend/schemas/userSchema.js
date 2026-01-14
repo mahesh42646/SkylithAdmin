@@ -83,6 +83,11 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  attendanceStartDate: {
+    type: Date,
+    default: null,
+    description: 'Date from which attendance tracking starts for this user'
+  },
   lastLogin: {
     type: Date
   },

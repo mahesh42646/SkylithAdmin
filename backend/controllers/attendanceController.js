@@ -346,8 +346,108 @@ exports.getAttendanceById = async (req, res) => {
 // @access  Private (Admin/Management with VIEW_ATTENDANCE permission)
 exports.getAllAttendance = async (req, res) => {
   try {
-    const { userId, startDate, endDate, status, page = 1, limit = 30 } = req.query;
+    const { userId, startDate, endDate, status, page = 1, limit = 1000, showAllUsers = 'false' } = req.query;
 
+    // If showAllUsers is true, return all users with their attendance for the date range
+    if (showAllUsers === 'true' && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Get all active users
+      const users = await User.find({ status: { $ne: 'inactive' } })
+        .select('name email avatar department role createdAt attendanceStartDate')
+        .sort({ name: 1 });
+
+      // Get all attendance records for the date range
+      const attendanceRecords = await Attendance.find({
+        date: { $gte: start, $lte: end }
+      }).populate('editedBy', 'name email');
+
+      // Create a map of attendance by user and date
+      const attendanceMap = {};
+      attendanceRecords.forEach(record => {
+        const userId = record.user.toString();
+        const dateKey = record.date.toISOString().split('T')[0];
+        if (!attendanceMap[userId]) {
+          attendanceMap[userId] = {};
+        }
+        attendanceMap[userId][dateKey] = record;
+      });
+
+      // Build result array with all users and their attendance
+      const result = [];
+      
+      // Iterate through each day in the range
+      const currentDate = new Date(start);
+      while (currentDate <= end) {
+        const dateKey = currentDate.toISOString().split('T')[0];
+        
+        users.forEach(user => {
+          const userId = user._id.toString();
+          
+          // Check if user account was created before or on this date
+          const userCreatedDate = new Date(user.createdAt);
+          userCreatedDate.setHours(0, 0, 0, 0);
+          
+          const attendanceStartDate = user.attendanceStartDate 
+            ? new Date(user.attendanceStartDate) 
+            : userCreatedDate;
+          attendanceStartDate.setHours(0, 0, 0, 0);
+          
+          // Only include dates after attendance start date
+          if (currentDate >= attendanceStartDate) {
+            const attendance = attendanceMap[userId]?.[dateKey];
+            
+            if (attendance) {
+              // User has attendance record
+              result.push({
+                ...attendance.toObject(),
+                user: user
+              });
+            } else {
+              // User has no attendance record - create placeholder
+              result.push({
+                _id: null,
+                user: user,
+                date: new Date(currentDate),
+                status: 'absent',
+                punchIn: null,
+                punchOut: null,
+                workingHours: 0,
+                isEdited: false,
+                notes: 'Not marked'
+              });
+            }
+          }
+        });
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // Apply filters
+      let filteredResult = result;
+      if (userId) {
+        filteredResult = filteredResult.filter(r => r.user._id.toString() === userId);
+      }
+      if (status) {
+        filteredResult = filteredResult.filter(r => r.status === status);
+      }
+
+      // Sort by date descending
+      filteredResult.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      return res.status(200).json({
+        success: true,
+        data: filteredResult,
+        pagination: {
+          total: filteredResult.length,
+          page: 1,
+          pages: 1
+        }
+      });
+    }
+
+    // Default behavior - only return existing attendance records
     const query = {};
 
     if (userId) {
@@ -523,6 +623,172 @@ exports.getAttendanceSummary = async (req, res) => {
       data: summary
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Manually create/mark attendance (Admin only)
+// @route   POST /api/attendance/manual
+// @access  Private (Admin with MANAGE_ATTENDANCE permission)
+exports.createManualAttendance = async (req, res) => {
+  try {
+    const { userId, date, status, punchInTime, punchOutTime, notes } = req.body;
+
+    if (!userId || !date || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID, date, and status are required'
+      });
+    }
+
+    // Parse the date and set to start of day
+    const attendanceDate = new Date(date);
+    attendanceDate.setHours(0, 0, 0, 0);
+
+    // Check if attendance already exists for this user and date
+    let attendance = await Attendance.findOne({
+      user: userId,
+      date: attendanceDate
+    });
+
+    if (attendance) {
+      // Update existing attendance
+      attendance.status = status;
+      attendance.notes = notes || attendance.notes;
+      
+      if (punchInTime) {
+        attendance.punchIn = attendance.punchIn || {};
+        attendance.punchIn.time = new Date(punchInTime);
+      }
+      
+      if (punchOutTime) {
+        attendance.punchOut = attendance.punchOut || {};
+        attendance.punchOut.time = new Date(punchOutTime);
+      }
+      
+      attendance.isEdited = true;
+      attendance.editedBy = req.user.id;
+      attendance.editedAt = new Date();
+    } else {
+      // Create new attendance record
+      const attendanceData = {
+        user: userId,
+        date: attendanceDate,
+        status,
+        notes,
+        isEdited: true,
+        editedBy: req.user.id,
+        editedAt: new Date()
+      };
+
+      if (punchInTime) {
+        attendanceData.punchIn = { time: new Date(punchInTime) };
+      }
+
+      if (punchOutTime) {
+        attendanceData.punchOut = { time: new Date(punchOutTime) };
+      }
+
+      attendance = new Attendance(attendanceData);
+    }
+
+    await attendance.save();
+
+    await createAuditLog(
+      'Manual Attendance Created/Updated',
+      req.user,
+      'attendance',
+      attendance._id,
+      { userId, date, status },
+      req
+    );
+
+    res.status(200).json({
+      success: true,
+      data: attendance,
+      message: 'Attendance marked successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Auto-mark absent users (Called by cron job at midnight)
+// @route   POST /api/attendance/auto-mark-absent
+// @access  Private (Internal/Cron)
+exports.autoMarkAbsent = async (req, res) => {
+  try {
+    // Get yesterday's date (the day that just ended)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+
+    // Get all active users
+    const users = await User.find({ status: { $ne: 'inactive' } });
+
+    let markedCount = 0;
+    let punchOutMissCount = 0;
+
+    for (const user of users) {
+      // Check if user's attendance start date is set and is before or on yesterday
+      const attendanceStartDate = user.attendanceStartDate 
+        ? new Date(user.attendanceStartDate) 
+        : new Date(user.createdAt);
+      attendanceStartDate.setHours(0, 0, 0, 0);
+
+      // Only mark if user was supposed to have attendance for yesterday
+      if (yesterday >= attendanceStartDate) {
+        // Check if attendance record exists for yesterday
+        let attendance = await Attendance.findOne({
+          user: user._id,
+          date: yesterday
+        });
+
+        if (!attendance) {
+          // No attendance record - mark as absent
+          attendance = new Attendance({
+            user: user._id,
+            date: yesterday,
+            status: 'absent',
+            notes: 'Auto-marked absent (no punch in)',
+            isEdited: true
+          });
+          await attendance.save();
+          markedCount++;
+        } else if (attendance.punchIn && attendance.punchIn.time && (!attendance.punchOut || !attendance.punchOut.time)) {
+          // Punched in but not punched out - mark as punch out miss
+          attendance.punchOut = {
+            time: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59),
+            location: null,
+            image: null
+          };
+          attendance.notes = (attendance.notes || '') + ' [Auto punch-out: User did not punch out]';
+          attendance.isEdited = true;
+          await attendance.save();
+          punchOutMissCount++;
+        }
+      }
+    }
+
+    console.log(`Auto-marked ${markedCount} users as absent and ${punchOutMissCount} users with punch-out miss`);
+
+    res.status(200).json({
+      success: true,
+      message: `Auto-marked ${markedCount} users as absent and ${punchOutMissCount} users with punch-out miss`,
+      data: {
+        markedAbsent: markedCount,
+        punchOutMiss: punchOutMissCount,
+        date: yesterday
+      }
+    });
+  } catch (error) {
+    console.error('Auto-mark absent error:', error);
     res.status(500).json({
       success: false,
       message: error.message

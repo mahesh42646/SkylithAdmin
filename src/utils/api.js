@@ -336,6 +336,12 @@ export const api = {
       method: 'DELETE'
     }),
 
+  createManualAttendance: (attendanceData) =>
+    apiRequest('/attendance/manual', {
+      method: 'POST',
+      body: JSON.stringify(attendanceData)
+    }),
+
   // Location Tracking
   getActiveLocations: () => apiRequest('/location/active'),
   

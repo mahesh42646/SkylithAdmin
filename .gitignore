@@ -46,8 +46,8 @@ next-env.d.ts
 # Flutter project - not included in git
 attendance_app/
 
-# Backend uploads (images, files)
-backend/uploads/
+
+
 
 # Nested folders to ignore
 SkylithAdmin/

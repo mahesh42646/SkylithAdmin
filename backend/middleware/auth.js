@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../schemas/userSchema');
+const { ROLE_PERMISSIONS } = require('../utils/permissions');
 
 // Protect routes
 exports.protect = async (req, res, next) => {
@@ -66,21 +67,14 @@ exports.checkPermission = (permission) => {
       return next();
     }
 
-    // Check if user has the required permission
     const userPermissions = user.permissions || [];
-    
-    // Debug logging (remove in production)
-    console.log('Permission check:', {
-      required: permission,
-      userRole: user.role,
-      userPermissions: userPermissions,
-      hasPermission: userPermissions.includes(permission)
-    });
-    
-    if (!userPermissions.includes(permission)) {
+    const rolePermissions = ROLE_PERMISSIONS[user.role] || [];
+    const hasPermission = userPermissions.includes(permission) || rolePermissions.includes(permission);
+
+    if (!hasPermission) {
       return res.status(403).json({
         success: false,
-        message: `You do not have permission to perform this action. Required: ${permission}, Your permissions: ${userPermissions.join(', ')}`
+        message: `You do not have permission to perform this action. Required: ${permission}`
       });
     }
 

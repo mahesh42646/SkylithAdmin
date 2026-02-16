@@ -162,7 +162,7 @@ export default function LoginPage() {
                   </button>
                 </form>
 
-                <div className="mt-4 text-center">
+                {/* <div className="mt-4 text-center">
                   <p className="text-muted small mb-0">
                     Admin Credentials:
                   </p>
@@ -174,7 +174,7 @@ export default function LoginPage() {
                       <strong>Password:</strong> admin@123
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

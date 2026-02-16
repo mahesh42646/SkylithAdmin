@@ -1,7 +1,25 @@
 const User = require('../schemas/userSchema');
 const generateToken = require('../utils/generateToken');
-const { getDefaultPermissions } = require('../utils/permissions');
+const { getDefaultPermissions, PERMISSIONS, ROLE_PERMISSIONS } = require('../utils/permissions');
 const createAuditLog = require('../utils/createAuditLog');
+
+const MOBILE_APP_PERMISSIONS = [
+  PERMISSIONS.MARK_ATTENDANCE,
+  PERMISSIONS.VIEW_ATTENDANCE,
+  PERMISSIONS.VIEW_LEAVES,
+  PERMISSIONS.VIEW_CALENDAR,
+  PERMISSIONS.VIEW_TICKETS,
+  PERMISSIONS.RAISE_TICKET,
+  PERMISSIONS.VIEW_TASKS,
+  PERMISSIONS.VIEW_PROJECTS
+];
+
+function hasMobileAccess(user) {
+  const perms = user.permissions || [];
+  const rolePerms = ROLE_PERMISSIONS[user.role] || [];
+  const allPerms = [...new Set([...perms, ...rolePerms])];
+  return MOBILE_APP_PERMISSIONS.some(p => allPerms.includes(p));
+}
 
 // @desc    Register user (Admin only)
 // @route   POST /api/auth/register
@@ -100,6 +118,14 @@ exports.login = async (req, res) => {
     if (!user.permissions || user.permissions.length === 0) {
       user.permissions = getDefaultPermissions(user.role);
       await user.save({ validateBeforeSave: false });
+    }
+
+    // Mobile app: reject if user has no mobile access
+    if (req.body.client === 'mobile' && !hasMobileAccess(user)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have access to the mobile app. Please contact your administrator.'
+      });
     }
 
     // Create audit log

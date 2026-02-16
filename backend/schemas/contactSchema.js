@@ -29,8 +29,12 @@ const contactSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['contact_form', 'need_help', 'other'],
+    enum: ['contact_form', 'need_help', 'mobile_app', 'other'],
     default: 'contact_form'
+  },
+  raisedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   message: {
     type: String,

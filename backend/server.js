@@ -111,9 +111,13 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/roles', require('./routes/roleRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
+app.use('/api/tickets', require('./routes/ticketRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/location', require('./routes/locationRoutes'));
+app.use('/api/leaves', require('./routes/leaveRoutes'));
+app.use('/api/calendar', require('./routes/calendarRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

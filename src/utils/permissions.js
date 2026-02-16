@@ -42,11 +42,16 @@ export const PERMISSIONS = {
   // Tickets/Contact
   VIEW_TICKETS: 'view_tickets',
   MANAGE_TICKETS: 'manage_tickets',
+  RAISE_TICKET: 'raise_ticket',
   
   // Attendance
   VIEW_ATTENDANCE: 'view_attendance',
   MANAGE_ATTENDANCE: 'manage_attendance',
-  MARK_ATTENDANCE: 'mark_attendance'
+  MARK_ATTENDANCE: 'mark_attendance',
+
+  // Leave
+  VIEW_LEAVES: 'view_leaves',
+  MANAGE_LEAVES: 'manage_leaves'
 };
 
 // Role-based default permissions
@@ -78,9 +83,12 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MANAGE_CALENDAR,
     PERMISSIONS.VIEW_TICKETS,
     PERMISSIONS.MANAGE_TICKETS,
+    PERMISSIONS.RAISE_TICKET,
     PERMISSIONS.VIEW_ATTENDANCE,
     PERMISSIONS.MANAGE_ATTENDANCE,
-    PERMISSIONS.MARK_ATTENDANCE
+    PERMISSIONS.MARK_ATTENDANCE,
+    PERMISSIONS.VIEW_LEAVES,
+    PERMISSIONS.MANAGE_LEAVES
   ],
   management: [
     PERMISSIONS.VIEW_DASHBOARD,
@@ -98,8 +106,11 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.VIEW_CALENDAR,
     PERMISSIONS.VIEW_TICKETS,
     PERMISSIONS.MANAGE_TICKETS,
+    PERMISSIONS.RAISE_TICKET,
     PERMISSIONS.VIEW_ATTENDANCE,
-    PERMISSIONS.MANAGE_ATTENDANCE
+    PERMISSIONS.MANAGE_ATTENDANCE,
+    PERMISSIONS.VIEW_LEAVES,
+    PERMISSIONS.MANAGE_LEAVES
   ],
   team_member: [
     PERMISSIONS.VIEW_DASHBOARD,
@@ -108,8 +119,10 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.VIEW_CALENDAR,
     PERMISSIONS.VIEW_SETTINGS,
     PERMISSIONS.VIEW_TICKETS,
+    PERMISSIONS.RAISE_TICKET,
     PERMISSIONS.VIEW_ATTENDANCE,
-    PERMISSIONS.MARK_ATTENDANCE
+    PERMISSIONS.MARK_ATTENDANCE,
+    PERMISSIONS.VIEW_LEAVES
   ]
 };
 
@@ -173,7 +186,8 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.VIEW_CALENDAR, label: 'View Calendar' },
       { key: PERMISSIONS.MANAGE_CALENDAR, label: 'Manage Calendar' },
       { key: PERMISSIONS.VIEW_TICKETS, label: 'View Tickets' },
-      { key: PERMISSIONS.MANAGE_TICKETS, label: 'Manage Tickets' }
+      { key: PERMISSIONS.MANAGE_TICKETS, label: 'Manage Tickets' },
+      { key: PERMISSIONS.RAISE_TICKET, label: 'Raise Ticket (Mobile)' }
     ]
   },
   {
@@ -182,6 +196,13 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.VIEW_ATTENDANCE, label: 'View Attendance' },
       { key: PERMISSIONS.MANAGE_ATTENDANCE, label: 'Manage Attendance' },
       { key: PERMISSIONS.MARK_ATTENDANCE, label: 'Mark Attendance' }
+    ]
+  },
+  {
+    label: 'Leave',
+    permissions: [
+      { key: PERMISSIONS.VIEW_LEAVES, label: 'View Leaves' },
+      { key: PERMISSIONS.MANAGE_LEAVES, label: 'Approve/Reject Leaves' }
     ]
   }
 ];

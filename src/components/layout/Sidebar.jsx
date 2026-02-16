@@ -20,7 +20,8 @@ import {
   FaUserShield,
   FaTicketAlt,
   FaClock,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaUmbrellaBeach
 } from 'react-icons/fa';
 import { getCurrentUser, ROLES } from '@/utils/auth';
 import { hasPermission, PERMISSIONS } from '@/utils/permissions';
@@ -33,6 +34,7 @@ const allMenuItems = [
   { path: '/analytics', label: 'Analytics & Reports', icon: FaChartBar, permission: PERMISSIONS.VIEW_ANALYTICS },
   { path: '/tasks', label: 'Tasks', icon: FaClipboardList, permission: PERMISSIONS.VIEW_TASKS },
   { path: '/calendar', label: 'Calendar', icon: FaCalendar, permission: PERMISSIONS.VIEW_CALENDAR },
+  { path: '/leaves', label: 'Leave Management', icon: FaUmbrellaBeach, permission: PERMISSIONS.VIEW_LEAVES },
   { path: '/attendance', label: 'Attendance', icon: FaClock, permission: PERMISSIONS.VIEW_ATTENDANCE },
   { path: '/tickets', label: 'Tickets', icon: FaTicketAlt, permission: PERMISSIONS.VIEW_TICKETS },
   { path: '/settings', label: 'Settings', icon: FaCog, permission: PERMISSIONS.VIEW_SETTINGS }

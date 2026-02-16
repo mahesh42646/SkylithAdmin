@@ -342,6 +342,62 @@ export const api = {
       body: JSON.stringify(attendanceData)
     }),
 
+  // Leaves
+  getLeaves: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/leaves${queryString ? `?${queryString}` : ''}`);
+  },
+
+  approveLeave: (id) =>
+    apiRequest(`/leaves/${id}/approve`, {
+      method: 'PUT'
+    }),
+
+  rejectLeave: (id, rejectionReason = '') =>
+    apiRequest(`/leaves/${id}/reject`, {
+      method: 'PUT',
+      body: JSON.stringify({ rejectionReason })
+    }),
+
+  cancelLeave: (id) =>
+    apiRequest(`/leaves/${id}`, {
+      method: 'DELETE'
+    }),
+
+  createLeave: (leaveData) =>
+    apiRequest('/leaves', {
+      method: 'POST',
+      body: JSON.stringify(leaveData)
+    }),
+
+  // Calendar
+  getCalendarEvents: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/calendar/events${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getCalendar: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/calendar${queryString ? `?${queryString}` : ''}`);
+  },
+
+  createCalendarEvent: (eventData) =>
+    apiRequest('/calendar', {
+      method: 'POST',
+      body: JSON.stringify(eventData)
+    }),
+
+  updateCalendarEvent: (id, eventData) =>
+    apiRequest(`/calendar/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(eventData)
+    }),
+
+  deleteCalendarEvent: (id) =>
+    apiRequest(`/calendar/${id}`, {
+      method: 'DELETE'
+    }),
+
   // Location Tracking
   getActiveLocations: () => apiRequest('/location/active'),
   

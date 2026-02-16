@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/utils/auth';
+import { isAuthenticated, getCurrentUser } from '@/utils/auth';
+import { hasPermission, PERMISSIONS } from '@/utils/permissions';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import CalendarSetup from '@/pages/CalendarSetup';
 
 export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
@@ -18,23 +20,16 @@ export default function CalendarPage() {
     setLoading(false);
   }, [router]);
 
+  const user = getCurrentUser();
+  const canManage = user && hasPermission(user, PERMISSIONS.MANAGE_CALENDAR);
+
   if (loading) {
     return <LoadingSpinner fullScreen />;
   }
 
   return (
     <DashboardLayout>
-      <div className="container-fluid px-3 py-4">
-        <div className="mb-4">
-          <h2 className="fw-bold mb-2">Calendar</h2>
-          <p className="text-muted">View your schedule and upcoming events</p>
-        </div>
-        <div className="card">
-          <div className="card-body text-center py-5">
-            <p className="text-muted">Calendar view coming soon...</p>
-          </div>
-        </div>
-      </div>
+      <CalendarSetup />
     </DashboardLayout>
   );
 }

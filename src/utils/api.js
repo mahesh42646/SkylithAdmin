@@ -359,9 +359,15 @@ export const api = {
       body: JSON.stringify({ rejectionReason })
     }),
 
-  cancelLeave: (id) =>
+  updateLeave: (id, leaveData) =>
     apiRequest(`/leaves/${id}`, {
-      method: 'DELETE'
+      method: 'PUT',
+      body: JSON.stringify(leaveData)
+    }),
+
+  cancelLeave: (id) =>
+    apiRequest(`/leaves/${id}/cancel`, {
+      method: 'PUT'
     }),
 
   createLeave: (leaveData) =>

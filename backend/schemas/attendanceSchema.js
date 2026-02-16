@@ -150,9 +150,10 @@ attendanceSchema.pre('save', function(next) {
       }
     }
     
-    // Determine status based on working hours and punch in time
-    const punchInHour = this.punchIn.time.getHours();
-    const punchInMinutes = this.punchIn.time.getMinutes();
+    // Determine status based on working hours and punch in time (IST: late after 10:00 AM)
+    const punchInIST = new Date(this.punchIn.time.getTime() + (5.5 * 60 * 60 * 1000));
+    const punchInHour = punchInIST.getUTCHours();
+    const punchInMinutes = punchInIST.getUTCMinutes();
     const isLate = punchInHour > 10 || (punchInHour === 10 && punchInMinutes > 0);
     const isHalfDay = this.activeHours < 8;
     
@@ -173,9 +174,10 @@ attendanceSchema.pre('save', function(next) {
       this.status = 'present';
     }
   } else if (this.punchIn && this.punchIn.time && (!this.punchOut || !this.punchOut.time)) {
-    // Only punch in, no punch out yet
-    const punchInHour = this.punchIn.time.getHours();
-    const punchInMinutes = this.punchIn.time.getMinutes();
+    // Only punch in, no punch out yet (IST: late after 10:00 AM)
+    const punchInIST = new Date(this.punchIn.time.getTime() + (5.5 * 60 * 60 * 1000));
+    const punchInHour = punchInIST.getUTCHours();
+    const punchInMinutes = punchInIST.getUTCMinutes();
     
     // Set status based on punch in time
     if (punchInHour > 10 || (punchInHour === 10 && punchInMinutes > 0)) {

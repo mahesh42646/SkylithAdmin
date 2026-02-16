@@ -3,6 +3,20 @@ const Attendance = require('../schemas/attendanceSchema');
 const createAuditLog = require('../utils/createAuditLog');
 const { PERMISSIONS } = require('../utils/permissions');
 
+// Check overlap with existing approved/pending leaves
+async function hasOverlappingLeave(userId, start, end, excludeId = null) {
+  const query = {
+    user: userId,
+    status: { $in: ['pending', 'approved'] },
+    $or: [
+      { startDate: { $lte: end }, endDate: { $gte: start } }
+    ]
+  };
+  if (excludeId) query._id = { $ne: excludeId };
+  const overlap = await Leave.findOne(query);
+  return !!overlap;
+}
+
 // @desc    Apply for leave (user)
 // @route   POST /api/leaves
 // @access  Private
@@ -18,6 +32,14 @@ exports.createLeave = async (req, res) => {
 
     if (end < start) {
       return res.status(400).json({ success: false, message: 'End date must be after start date' });
+    }
+
+    const overlap = await hasOverlappingLeave(userId, start, end);
+    if (overlap) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a leave request for these dates. Cannot apply for overlapping leave.'
+      });
     }
 
     const leave = new Leave({
@@ -173,8 +195,58 @@ exports.rejectLeave = async (req, res) => {
   }
 };
 
-// @desc    Cancel own leave (if pending)
-// @route   DELETE /api/leaves/:id
+// @desc    Update leave (if pending)
+// @route   PUT /api/leaves/:id
+// @access  Private
+exports.updateLeave = async (req, res) => {
+  try {
+    const leave = await Leave.findById(req.params.id);
+    if (!leave) {
+      return res.status(404).json({ success: false, message: 'Leave not found' });
+    }
+    if (leave.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    if (leave.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Only pending leaves can be edited' });
+    }
+
+    const { startDate, endDate, type, reason } = req.body;
+    if (startDate) leave.startDate = new Date(startDate);
+    if (endDate) leave.endDate = new Date(endDate);
+    if (type) leave.type = type;
+    if (reason !== undefined) leave.reason = reason;
+
+    leave.startDate.setHours(0, 0, 0, 0);
+    leave.endDate.setHours(23, 59, 59, 999);
+
+    if (leave.endDate < leave.startDate) {
+      return res.status(400).json({ success: false, message: 'End date must be after start date' });
+    }
+
+    const overlap = await hasOverlappingLeave(req.user.id, leave.startDate, leave.endDate, leave._id);
+    if (overlap) {
+      return res.status(400).json({
+        success: false,
+        message: 'Overlaps with another leave request'
+      });
+    }
+
+    leave.isEdited = true;
+    leave.editedAt = new Date();
+    await leave.save();
+
+    await createAuditLog('Leave Updated', req.user, 'leave', leave._id, {}, req);
+
+    res.status(200).json({ success: true, data: leave, message: 'Leave updated' });
+  } catch (error) {
+    console.error('Update leave error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// @desc    Cancel own leave (if pending) - stores as cancelled
+// @route   PUT /api/leaves/:id/cancel
 // @access  Private
 exports.cancelLeave = async (req, res) => {
   try {
@@ -192,9 +264,14 @@ exports.cancelLeave = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Only pending leaves can be cancelled' });
     }
 
-    await leave.deleteOne();
+    leave.status = 'cancelled';
+    leave.approvedBy = req.user.id;
+    leave.approvedAt = new Date();
+    await leave.save();
 
-    res.status(200).json({ success: true, message: 'Leave cancelled' });
+    await createAuditLog('Leave Cancelled', req.user, 'leave', leave._id, {}, req);
+
+    res.status(200).json({ success: true, data: leave, message: 'Leave cancelled' });
   } catch (error) {
     console.error('Cancel leave error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

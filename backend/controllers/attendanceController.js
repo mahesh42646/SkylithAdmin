@@ -76,11 +76,11 @@ exports.punchIn = async (req, res) => {
       image: imagePath, // Store file path instead of base64
     };
     
-    // Determine status based on punch in time
-    const hour = punchInTime.getHours();
-    const minute = punchInTime.getMinutes();
+    // Determine status based on punch in time (IST: late after 10:00 AM)
+    const punchInIST = new Date(punchInTime.getTime() + (5.5 * 60 * 60 * 1000));
+    const hour = punchInIST.getUTCHours();
+    const minute = punchInIST.getUTCMinutes();
     
-    // Late if after 10:00 AM
     if (hour > 10 || (hour === 10 && minute > 0)) {
       attendance.status = 'late';
     } else {
@@ -253,12 +253,13 @@ exports.getMyAttendance = async (req, res) => {
 
     const query = { user: userId };
 
-    if (startDate && endDate) {
-      query.date = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    }
+    const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    query.date = { $gte: start, $lte: end };
 
     const attendance = await Attendance.find(query)
       .sort({ date: -1 })
@@ -268,30 +269,41 @@ exports.getMyAttendance = async (req, res) => {
 
     const count = await Attendance.countDocuments(query);
 
-    // Calculate statistics - convert ObjectId to string for matching
     const mongoose = require('mongoose');
     const userIdObj = new mongoose.Types.ObjectId(userId);
+
     const stats = await Attendance.aggregate([
-      { $match: { user: userIdObj } },
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
+      { $match: { user: userIdObj, date: { $gte: start, $lte: end } } },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 
-    const statistics = {
-      present: stats.find(s => s._id === 'present')?.count || 0,
-      absent: stats.find(s => s._id === 'absent')?.count || 0,
-      late: stats.find(s => s._id === 'late')?.count || 0,
-      half_day: stats.find(s => s._id === 'half_day')?.count || 0,
-      leave: stats.find(s => s._id === 'leave')?.count || 0,
-      holiday: stats.find(s => s._id === 'holiday')?.count || 0
-    };
+    const recordsByStatus = Object.fromEntries(stats.map(s => [s._id, s.count]));
 
-    console.log('My attendance stats:', statistics);
-    console.log('Found attendance records:', attendance.length);
+    let absentCount = recordsByStatus.absent || 0;
+    const presentCount = recordsByStatus.present || 0;
+    const lateCount = (recordsByStatus.late || 0) + (recordsByStatus.late_half_day || 0);
+    const halfDayCount = (recordsByStatus.half_day || 0) + (recordsByStatus.late_half_day || 0);
+    const leaveCount = recordsByStatus.leave || 0;
+    const holidayCount = recordsByStatus.holiday || 0;
+
+    const daysWithRecord = presentCount + lateCount + (recordsByStatus.half_day || 0) + (recordsByStatus.late_half_day || 0) + leaveCount + holidayCount + absentCount;
+    let current = new Date(start);
+    let totalDays = 0;
+    while (current <= end) {
+      totalDays++;
+      current.setDate(current.getDate() + 1);
+    }
+    const daysNotMarked = Math.max(0, totalDays - daysWithRecord);
+    absentCount += daysNotMarked;
+
+    const statistics = {
+      present: presentCount,
+      absent: absentCount,
+      late: lateCount,
+      half_day: halfDayCount,
+      leave: leaveCount,
+      holiday: holidayCount
+    };
 
     res.status(200).json({
       success: true,

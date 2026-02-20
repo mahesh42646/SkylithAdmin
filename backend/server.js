@@ -118,6 +118,7 @@ app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/location', require('./routes/locationRoutes'));
 app.use('/api/leaves', require('./routes/leaveRoutes'));
 app.use('/api/calendar', require('./routes/calendarRoutes'));
+app.use('/api', require('./routes/mailRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

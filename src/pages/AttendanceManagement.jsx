@@ -385,22 +385,24 @@ export default function AttendanceManagement() {
       >
         <FaChartLine />
       </button>
-      <button
-        className="btn btn-sm btn-outline-primary"
-        onClick={() => handleEdit(row)}
-        disabled={!canManage}
-        title="Edit Attendance"
-      >
-        <FaEdit />
-      </button>
-      <button
-        className="btn btn-sm btn-outline-danger"
-        onClick={() => handleDelete(row)}
-        disabled={!canManage}
-        title="Delete Attendance"
-      >
-        <FaTrash />
-      </button>
+      {canManage && (
+        <>
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => handleEdit(row)}
+            title="Edit Attendance"
+          >
+            <FaEdit />
+          </button>
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => handleDelete(row)}
+            title="Delete Attendance"
+          >
+            <FaTrash />
+          </button>
+        </>
+      )}
     </div>
   );
 

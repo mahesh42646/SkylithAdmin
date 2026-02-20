@@ -51,7 +51,12 @@ export const PERMISSIONS = {
 
   // Leave
   VIEW_LEAVES: 'view_leaves',
-  MANAGE_LEAVES: 'manage_leaves'
+  MANAGE_LEAVES: 'manage_leaves',
+  
+  // Mail
+  VIEW_MAIL: 'view_mail',
+  MANAGE_MAILBOXES: 'manage_mailboxes',
+  SEND_MAIL: 'send_mail'
 };
 
 // Role-based default permissions
@@ -110,7 +115,9 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.VIEW_ATTENDANCE,
     PERMISSIONS.MANAGE_ATTENDANCE,
     PERMISSIONS.VIEW_LEAVES,
-    PERMISSIONS.MANAGE_LEAVES
+    PERMISSIONS.MANAGE_LEAVES,
+    PERMISSIONS.VIEW_MAIL,
+    PERMISSIONS.SEND_MAIL
   ],
   team_member: [
     PERMISSIONS.VIEW_DASHBOARD,
@@ -203,6 +210,14 @@ export const PERMISSION_GROUPS = [
     permissions: [
       { key: PERMISSIONS.VIEW_LEAVES, label: 'View Leaves' },
       { key: PERMISSIONS.MANAGE_LEAVES, label: 'Approve/Reject Leaves' }
+    ]
+  },
+  {
+    label: 'Mail',
+    permissions: [
+      { key: PERMISSIONS.VIEW_MAIL, label: 'View Mail' },
+      { key: PERMISSIONS.MANAGE_MAILBOXES, label: 'Manage Mailboxes' },
+      { key: PERMISSIONS.SEND_MAIL, label: 'Send Mail' }
     ]
   }
 ];

@@ -21,7 +21,8 @@ import {
   FaTicketAlt,
   FaClock,
   FaMapMarkerAlt,
-  FaUmbrellaBeach
+  FaUmbrellaBeach,
+  FaEnvelope
 } from 'react-icons/fa';
 import { getCurrentUser, ROLES } from '@/utils/auth';
 import { hasPermission, PERMISSIONS } from '@/utils/permissions';
@@ -37,6 +38,7 @@ const allMenuItems = [
   { path: '/leaves', label: 'Leave Management', icon: FaUmbrellaBeach, permission: PERMISSIONS.VIEW_LEAVES },
   { path: '/attendance', label: 'Attendance', icon: FaClock, permission: PERMISSIONS.VIEW_ATTENDANCE },
   { path: '/tickets', label: 'Tickets', icon: FaTicketAlt, permission: PERMISSIONS.VIEW_TICKETS },
+  { path: '/mail', label: 'Mail', icon: FaEnvelope, permission: PERMISSIONS.VIEW_MAIL },
   { path: '/settings', label: 'Settings', icon: FaCog, permission: PERMISSIONS.VIEW_SETTINGS }
 ];
 

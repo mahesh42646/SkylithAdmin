@@ -413,6 +413,55 @@ export const api = {
       body: JSON.stringify(data)
     }),
 
+  // Mail
+  listMailboxes: () => apiRequest('/mailbox/list'),
+  
+  createMailbox: (mailboxData) =>
+    apiRequest('/mailbox/create', {
+      method: 'POST',
+      body: JSON.stringify(mailboxData)
+    }),
+
+  resetMailboxPassword: (email, newPassword) =>
+    apiRequest('/mailbox/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, newPassword })
+    }),
+
+  deleteMailbox: (email) =>
+    apiRequest('/mailbox/remove', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    }),
+
+  sendMail: (mailData) =>
+    apiRequest('/mail/send', {
+      method: 'POST',
+      body: JSON.stringify(mailData)
+    }),
+
+  getInbox: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/mail/inbox${queryString ? `?${queryString}` : ''}`);
+  },
+
+  getMessage: (id, folder = 'INBOX') =>
+    apiRequest(`/mail/message/${id}?folder=${folder}`),
+
+  deleteMessage: (id, folder = 'INBOX') =>
+    apiRequest('/mail/delete', {
+      method: 'POST',
+      body: JSON.stringify({ id, folder })
+    }),
+
+  markRead: (id, read, folder = 'INBOX') =>
+    apiRequest('/mail/mark-read', {
+      method: 'POST',
+      body: JSON.stringify({ id, read, folder })
+    }),
+
+  listFolders: () => apiRequest('/mail/folders'),
+
   // Health check
   healthCheck: () => apiRequest('/health')
 };

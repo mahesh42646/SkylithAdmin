@@ -12,13 +12,27 @@ if (!MAILCOW_API_URL || !MAILCOW_API_KEY) {
 }
 
 const client = axios.create({
-  baseURL: MAILCOW_API_URL,
+  baseURL: MAILCOW_API_URL || '',
   headers: {
     'Content-Type': 'application/json',
     'X-API-Key': MAILCOW_API_KEY || ''
   },
   timeout: 15000
 });
+
+// Add error interceptor for better error messages
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const message = error.response.data?.msg || error.response.data?.message || error.message;
+      error.message = `Mailcow API Error: ${message}`;
+    } else if (error.request) {
+      error.message = 'Mailcow API: No response received. Check MAILCOW_API_URL configuration.';
+    }
+    throw error;
+  }
+);
 
 async function listMailboxes() {
   const { data } = await client.get('/api/v1/get/mailbox/all');

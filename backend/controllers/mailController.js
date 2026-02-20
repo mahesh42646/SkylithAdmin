@@ -9,7 +9,11 @@ exports.listMailboxes = async (req, res, next) => {
     const mailboxes = await mailcowApi.listMailboxes();
     res.status(200).json({ success: true, data: mailboxes });
   } catch (error) {
-    next(error);
+    console.error('[mailController] Error listing mailboxes:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to list mailboxes'
+    });
   }
 };
 
@@ -102,7 +106,11 @@ exports.getInbox = async (req, res, next) => {
 
     res.status(200).json({ success: true, data: inbox });
   } catch (error) {
-    next(error);
+    console.error('[mailController] Error getting inbox:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch inbox. Check IMAP configuration.'
+    });
   }
 };
 
@@ -166,7 +174,11 @@ exports.listFolders = async (req, res, next) => {
     const folders = await imapService.listFolders();
     res.status(200).json({ success: true, data: folders });
   } catch (error) {
-    next(error);
+    console.error('[mailController] Error listing folders:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to list folders. Check IMAP configuration.'
+    });
   }
 };
 
